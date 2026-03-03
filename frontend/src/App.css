@@ -313,12 +313,13 @@ html {
   height: 100vh;
   background-color: #020431;
   position: relative;
+  padding: .5rem;
 }
 
 .meetUserVideo{
 position: absolute;
 border-radius: .5rem;
-bottom: 20vh;
+bottom: 10vh;
 right: 10px;
 width: auto;
 height: 20vh;
@@ -343,4 +344,15 @@ height: 20vh;
 
 .callEnd{
   color: red !important;
+}
+
+.conferenceView{
+  display: flex;
+  gap: 10px;
+}
+
+.conferenceView  video{
+  width: auto;
+  border-radius: 10px;
+  height: 30vh;
 }
