@@ -34,8 +34,8 @@ app.get("/", (req, res) => {
 
 app.use("/api/users", userRoute);
 
-User.hasMany(Meeting, { foreignKey: "user_id" });
-Meeting.belongsTo(User, { foreignKey: "user_id" });
+User.hasMany(Meeting, { foreignKey: "user_id", as: "meetings"});
+Meeting.belongsTo(User, { foreignKey: "user_id", as: "user"});
 
 app.use((err, req, res, next) => {
   console.error("🔥 Error:", err);

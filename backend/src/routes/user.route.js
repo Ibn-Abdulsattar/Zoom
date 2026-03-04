@@ -8,6 +8,8 @@ import {
   resetPassword,
   verifyOtp,
 } from "../controllers/user.controller.js";
+import auth from "../middlewares/auth.js";
+import { addToHistory, getUserHistory } from "../controllers/meeting.controller.js";
 const router = Router();
 
 router.route("/login").post(wrapAsync(login));
@@ -16,7 +18,7 @@ router.route("/logout").post(wrapAsync(logout));
 router.route("/forgot").post(wrapAsync(forgot));
 router.route("/reset-password").post(wrapAsync(resetPassword));
 router.post("/verify-otp", wrapAsync(verifyOtp));
-router.route("/add_to_activity");
-router.route("/get_all_activity");
+router.route("/add_to_activity").post( auth("user", wrapAsync(addToHistory)) );
+router.route("/get_all_activity").get(auth("user", wrapAsync(getUserHistory)));
 
 export default router;

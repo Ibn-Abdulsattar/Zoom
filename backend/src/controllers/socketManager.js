@@ -14,8 +14,6 @@ export const connectToSocket = (server) => {
   });
 
   io.on("connection", (socket) => {
-    console.log("Client connected:", socket.id);
-
     socket.on("join-call", (path) => {
       if (!connections[path]) {
         connections[path] = [];
@@ -46,7 +44,6 @@ export const connectToSocket = (server) => {
     });
 
     socket.on("chat-message", (data, sender) => {
-      console.log(data);
       const [matchingRoom, found] = Object.entries(connections).reduce(
         ([room, isFound], [roomKey, roomValue]) => {
           if (!isFound && roomValue.includes(socket.id)) {
@@ -73,7 +70,6 @@ export const connectToSocket = (server) => {
         io.to(element).emit("chat-message", data, sender, socket.id);
       });
     });
-
 
     socket.on("disconnect", () => {
       var diffTime = Math.abs(timeOnline[socket.id] - new Date());

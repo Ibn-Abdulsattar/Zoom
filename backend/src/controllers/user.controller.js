@@ -1,4 +1,4 @@
-import {User} from "../models/user.model.js";
+import { User } from "../models/user.model.js";
 import generateToken from "../utils/generateToken.js";
 import crypto from "node:crypto";
 import sendMail from "../services/sendMail.js";
@@ -244,7 +244,7 @@ export const clearUserTokens = wrapAsync(async () => {
       where: {
         token_updated_at: { [Op.lt]: thirtyMinutesAgo },
       },
-    }
+    },
   );
 
   console.log(`Cleared tokens for ${affectedCount} users.`);

@@ -82,7 +82,7 @@ class User extends Model {
         },
       ],
       hooks: {
-        // lifecycle Events // automaticaly execute before or after specific operations
+        
         beforeValidate: (user) => {
           if (user.email) {
             user.email = user.email.toLowerCase().trim();

@@ -12,36 +12,36 @@ class Otp extends Model {
   }
 }
 
-      (async () => {
-        Otp.init(
-          {
-            email: {
-              type: DataTypes.STRING,
-              allowNull: false,
-              trim: true,
-              validate: {
-                is: {
-                  args: /^(?=.*[@])(?=.*[0-9])/,
-                  msg: "Must be a valid email address",
-                },
-              },
-            },
-            code: {
-              type: DataTypes.STRING(6),
-              allowNull: false,
-            },
-            expiresAt: {
-              type: DataTypes.DATE,
-              allowNull: false,
-            },
+(async () => {
+  Otp.init(
+    {
+      email: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        trim: true,
+        validate: {
+          is: {
+            args: /^(?=.*[@])(?=.*[0-9])/,
+            msg: "Must be a valid email address",
           },
-          {
-            sequelize,
-            modelName: "Otp",
-            tableName: "otps",
-            timestamps: true,
-          }
-        );
-      })();
+        },
+      },
+      code: {
+        type: DataTypes.STRING(6),
+        allowNull: false,
+      },
+      expiresAt: {
+        type: DataTypes.DATE,
+        allowNull: false,
+      },
+    },
+    {
+      sequelize,
+      modelName: "Otp",
+      tableName: "otps",
+      timestamps: true,
+    },
+  );
+})();
 
 export default Otp;

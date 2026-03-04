@@ -498,7 +498,6 @@ export default function VideoMeet() {
         navigator.mediaDevices
           .getDisplayMedia({ video: true, audio: true })
           .then(getDisplayMediaSuccess)
-          // .then((stream) => {})
           .catch((e) => {
             console.log(e);
             setScreen(false);
@@ -535,7 +534,7 @@ export default function VideoMeet() {
     localVideoRef.current.srcObject
       .getTracks()
       .forEach((track) => track.stop());
-    navigate("/");
+    navigate("/home");
   };
 
   return (

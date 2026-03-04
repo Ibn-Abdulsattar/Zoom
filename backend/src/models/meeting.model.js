@@ -3,31 +3,34 @@ import { sequelize } from "../config/db.js";
 
 class Meeting extends Model {}
 
-Meeting.init({
-    user_id: {
-         type: DataTypes.UUID, 
+(async () =>
+  Meeting.init(
+    {
+      user_id: {
+        type: DataTypes.UUID,
         references: {
-            model:'users',
-            key: 'user_id',
+          model: "users",
+          key: "user_id",
         },
         allowNull: false,
-        
-    },
-    meeting_code:{
+      },
+      meeting_code: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true,
-    },
-    date: {
+      },
+      date: {
         type: DataTypes.DATE,
         allowNull: false,
         defaultValue: DataTypes.NOW,
+      },
     },
-}, {
-    sequelize,
-    modelName: "Meeting",
-    tableName: "meetings",
-    underscored: true,
-});
+    {
+      sequelize,
+      modelName: "Meeting",
+      tableName: "meetings",
+      underscored: true,
+    },
+  ))();
 
-export default Meeting ;
+export default Meeting;
