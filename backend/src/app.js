@@ -22,7 +22,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: [process.env.FRONTEND_URL],
-    credentials: true, //allow cookie, http authentication, TLS-client-certificate
+    credentials: true,
   }),
 );
 
@@ -32,7 +32,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use("/api/users", userRoute);
+app.use("/api/auth", userRoute);
 
 User.hasMany(Meeting, { foreignKey: "user_id", as: "meetings"});
 Meeting.belongsTo(User, { foreignKey: "user_id", as: "user"});

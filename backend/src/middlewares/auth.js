@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { StatusCodes } from "http-status-codes";
 import ExpressError from "../utils/expressError.js";
 
 const auth =
@@ -20,7 +19,7 @@ const auth =
       return next(
         new ExpressError(
           "Authentication failed: No token provided",
-          StatusCodes.UNAUTHORIZED
+          401
         )
       );
     }
@@ -32,7 +31,7 @@ const auth =
       // RBAC Check
       if (role === "admin" && user.role !== "admin") {
         return next(
-          new ExpressError("Admin access only", StatusCodes.FORBIDDEN)
+          new ExpressError("Admin access only", 403)
         );
       }
 
@@ -41,7 +40,7 @@ const auth =
     } catch (error) {
       const message =
         error.name === "TokenExpiredError" ? "Token expired" : "Invalid token";
-      return next(new ExpressError(message, StatusCodes.UNAUTHORIZED));
+      return next(new ExpressError(message, 401));
     }
   };
 

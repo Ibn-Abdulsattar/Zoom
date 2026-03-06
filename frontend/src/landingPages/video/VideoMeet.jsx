@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/immutability */
 import { useEffect, useRef, useState } from "react";
 import {
   Badge,
@@ -38,9 +37,9 @@ export default function VideoMeet() {
 
   const [audioAvailable, setAudioAvailable] = useState(true);
 
-  const [video, setVideo] = useState([]);
+  const [video, setVideo] = useState(false);
 
-  const [audio, setAudio] = useState();
+  const [audio, setAudio] = useState(false);
 
   const [screen, setScreen] = useState();
 
@@ -61,6 +60,14 @@ export default function VideoMeet() {
   const videoRef = useRef([]);
 
   const [videos, setVideos] = useState([]);
+
+  useEffect(() => {
+    return () => {
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+      }
+    };
+  }, []);
 
   // getPermissions
   const getPermissions = async () => {
@@ -280,8 +287,6 @@ export default function VideoMeet() {
     }
   };
 
-  console.log(messages);
-
   // connectToSocketServer
   const connectToSocketServer = () => {
     socketRef.current = io(server_url, { secure: false });
@@ -292,11 +297,10 @@ export default function VideoMeet() {
       socketRef.current.emit("join-call", window.location.href);
 
       socketIdRef.current = socketRef.current.id;
-
       socketRef.current.on("chat-message", addMessage);
 
       socketRef.current.on("user-left", (id) => {
-        setVideos(videos.filter((video) => video.socketId !== id));
+        setVideos((prev) => prev.filter((video) => video.socketId !== id));
       });
 
       socketRef.current.on("user-joined", (id, clients) => {
@@ -520,20 +524,25 @@ export default function VideoMeet() {
 
   const handleChatModule = () => {
     setShowModel(!showModel);
+    setNewMessages(0);
   };
 
   const sendMessage = (e) => {
     e.preventDefault();
-    socketRef.current.emit("chat-message", message, username);
-    setMessage("");
+    if (message.trim().length > 0) {
+      socketRef.current.emit("chat-message", message, username);
+      setMessage("");
+    }
   };
 
   const endCall = (e) => {
     e.preventDefault();
     window.localStream.getTracks().forEach((track) => track.stop());
-    localVideoRef.current.srcObject
-      .getTracks()
-      .forEach((track) => track.stop());
+    if (localVideoRef.current?.srcObject) {
+      localVideoRef.current.srcObject
+        .getTracks()
+        .forEach((track) => track.stop());
+    }
     navigate("/home");
   };
 
@@ -567,86 +576,235 @@ export default function VideoMeet() {
               sx={{
                 position: "absolute",
                 height: "90vh",
-                width: "18rem",
-                top: 5,
-                right: 5,
-                background: "#fff",
-                px: ".5rem",
-                borderRadius: "1rem",
+                width: "22rem",
+                top: 12,
+                right: 12,
+                background:
+                  "linear-gradient(145deg, rgba(15,15,25,0.97) 0%, rgba(25,20,40,0.97) 100%)",
+                backdropFilter: "blur(20px)",
+                border: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "1.5rem",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "auto",
               }}
             >
-              <Typography
-                variant="h5"
-                sx={{ textAlign: "center", fontWeight: "600" }}
+              {/* Header */}
+              <Box
+                sx={{
+                  px: "1.25rem",
+                  py: "1rem",
+                  borderBottom: "1px solid rgba(255,255,255,0.07)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1.5,
+                  flexShrink: 0,
+                }}
               >
-                Chat
-              </Typography>
-              {/* Chat container */}
-              <Box sx={{ height: "100%", width: "100%", position: "relevant" }}>
-                {/* Chatting Display */}
-                <Box>
-                  {messages.length > 0 ? (
-                    messages.map((item, idx) => (
-                      <Box sx={{ mb: 1 }} key={idx}>
-                        <Typography sx={{ fontWeight: "600" }}>
-                          {item.sender}
-                        </Typography>
-                        <Typography>{item.data}</Typography>
-                      </Box>
-                    ))
-                  ) : (
-                    <Box sx={{ textAlign: "center", fontFamily: "cursive" }}>
-                      No Chat Yet
-                    </Box>
-                  )}
-                </Box>
-                {/* Chatting Area */}
                 <Box
                   sx={{
-                    position: "absolute",
-                    bottom: 10,
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    background: "#4ade80",
+                    boxShadow: "0 0 8px #4ade80",
+                  }}
+                />
+                <Typography
+                  sx={{
+                    fontFamily: "'DM Sans', sans-serif",
+                    fontWeight: 700,
+                    fontSize: "1rem",
+                    letterSpacing: "0.06em",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.9)",
                   }}
                 >
-                  <form
-                    style={{
+                  Live Chat
+                </Typography>
+              </Box>
+
+              {/* Messages */}
+              <Box
+                sx={{
+                  flex: 1,
+                  overflowY: "auto",
+                  px: "1.25rem",
+                  py: "1rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 1.5,
+                }}
+              >
+                {messages.length > 0 ? (
+                  messages.map((item, idx) => (
+                    <Box
+                      key={idx}
+                      sx={{
+                        animation: "fadeUp 0.25s ease forwards",
+                        "@keyframes fadeUp": {
+                          from: { opacity: 0, transform: "translateY(8px)" },
+                          to: { opacity: 1, transform: "translateY(0)" },
+                        },
+                      }}
+                    >
+                      <Typography
+                        sx={{
+                          fontFamily: "'DM Sans', sans-serif",
+                          fontSize: "0.7rem",
+                          fontWeight: 700,
+                          letterSpacing: "0.08em",
+                          textTransform: "uppercase",
+                          color: "#a78bfa",
+                          mb: 0.4,
+                        }}
+                      >
+                        {item.sender}
+                      </Typography>
+                      <Box
+                        sx={{
+                          background: "rgba(255,255,255,0.05)",
+                          border: "1px solid rgba(255,255,255,0.07)",
+                          borderRadius: "0 0.75rem 0.75rem 0.75rem",
+                          px: "0.875rem",
+                          py: "0.6rem",
+                        }}
+                      >
+                        <Typography
+                          sx={{
+                            fontFamily: "'DM Sans', sans-serif",
+                            fontSize: "0.875rem",
+                            color: "rgba(255,255,255,0.82)",
+                            lineHeight: 1.5,
+                          }}
+                        >
+                          {item.data}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  ))
+                ) : (
+                  <Box
+                    sx={{
+                      flex: 1,
                       display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
                       justifyContent: "center",
                       gap: 1,
+                      opacity: 0.4,
+                      mt: 6,
                     }}
-                    onSubmit={sendMessage}
                   >
-                    <TextField
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      id="outlined-basic"
-                      label="Enter your chat"
-                      variant="outlined"
-                    />
-                    <Button sx={{ mr: 0.5 }} type="submit" variant="contained">
-                      Send
-                    </Button>
-                  </form>
-                </Box>
+                    <Typography
+                      sx={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: "2rem",
+                        lineHeight: 1,
+                      }}
+                    >
+                      💬
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: "0.85rem",
+                        color: "rgba(255,255,255,0.6)",
+                        letterSpacing: "0.04em",
+                      }}
+                    >
+                      No messages yet
+                    </Typography>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Input Area */}
+              <Box
+                sx={{
+                  px: "1rem",
+                  py: "1rem",
+                  borderTop: "1px solid rgba(255,255,255,0.07)",
+                  flexShrink: 0,
+                }}
+              >
+                <form
+                  onSubmit={sendMessage}
+                  style={{
+                    display: "flex",
+                    gap: "0.5rem",
+                    alignItems: "center",
+                  }}
+                >
+                  <TextField
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    placeholder="Say something..."
+                    variant="outlined"
+                    size="small"
+                    fullWidth
+                    sx={{
+                      "& .MuiOutlinedInput-root": {
+                        fontFamily: "'DM Sans', sans-serif",
+                        fontSize: "0.875rem",
+                        color: "rgba(255,255,255,0.85)",
+                        background: "rgba(255,255,255,0.05)",
+                        borderRadius: "0.75rem",
+                      },
+                    }}
+                  />
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    sx={{
+                      minWidth: "unset",
+                      width: "2.5rem",
+                      height: "2.5rem",
+                      p: 0,
+                      borderRadius: "0.75rem",
+                      background: "linear-gradient(135deg, #7c3aed, #a78bfa)",
+                      boxShadow: "0 4px 14px rgba(124,58,237,0.5)",
+                      transition: "all 0.2s ease",
+                      flexShrink: 0,
+                      "&:hover": {
+                        background: "linear-gradient(135deg, #6d28d9, #7c3aed)",
+                        transform: "translateY(-1px)",
+                        boxShadow: "0 6px 20px rgba(124,58,237,0.6)",
+                      },
+                      "&:active": { transform: "scale(0.95)" },
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                      <path
+                        d="M22 2L11 13M22 2L15 22L11 13M22 2L2 9L11 13"
+                        stroke="white"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </Button>
+                </form>
               </Box>
             </Box>
           )}
 
           <div className="buttonContainer">
             <IconButton onClick={handleVideo}>
-              {video ? <VideocamIcon /> : <VideocamOffIcon />}
+              {video ? <VideocamOffIcon /> : <VideocamIcon />}
             </IconButton>
             <IconButton onClick={endCall}>
               <CallEndIcon className="callEnd" />
             </IconButton>
             <IconButton onClick={handleAudio}>
-              {audio ? <MicIcon /> : <MicOffIcon />}
+              {audio ? <MicOffIcon /> : <MicIcon />}
             </IconButton>
             <IconButton onClick={handleScreen}>
-              {screen ? <ScreenShareIcon /> : <StopScreenShareIcon />}
+              {screen ? <StopScreenShareIcon /> : <ScreenShareIcon />}
             </IconButton>
             <Badge badgeContent={newMessages} color="secondary">
               <IconButton onClick={handleChatModule}>
-                {showModel ? <ChatIcon /> : <SpeakerNotesOffIcon />}
+                {showModel ? <SpeakerNotesOffIcon /> : <ChatIcon />}
               </IconButton>
             </Badge>
           </div>

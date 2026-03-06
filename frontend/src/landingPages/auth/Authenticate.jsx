@@ -5,18 +5,24 @@ import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
 import Paper from "@mui/material/Paper";
 import Box from "@mui/material/Box";
-import Grid from "@mui/material/Grid";  
+import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
-import { useState } from "react";
-import { authService } from "../../services/auth.service";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import useAuthStore from "../../stores/auth.store.js";
-import useUiStore from "../../stores/ui.store.js";
+import { useDispatch, useSelector } from "react-redux";
+import { register, login, verifyOtp, forgot } from "../../redux/slices/auth.slice.js";
+import { isAuth, error, loader } from "../../redux/slices/auth.slice";
+import { clearError } from "../../redux/slices/auth.slice";
+import { toast } from "react-toastify";
 
 export default function Authenticate() {
+  const isAuthenticated = useSelector(isAuth);
+  const apiError = useSelector(error);
+  const loading = useSelector(loader);
+
+  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [otp, setOtp] = useState(false);
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -24,15 +30,20 @@ export default function Authenticate() {
     otp: "",
   });
   const [formState, setFormState] = useState(0);
-  const mode =
-    formState === 0 ? "login" : formState === 1 ? "register" : "forgot";
-  const [loading, setLoading] = useState(false);
-  const setUser = useAuthStore((state) => state.setUser);
-  const setAlerts = useUiStore((state) => state.setAlerts);
-
   const switchFormState = (state) => {
     setFormState(state);
   };
+
+  useEffect(() => {
+    if (isAuthenticated) navigate("/home");
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (apiError) {
+      toast.error(apiError);
+      dispatch(clearError());
+    }
+  }, [apiError, dispatch]);
 
   const getTitle = () => {
     switch (formState) {
@@ -70,46 +81,32 @@ export default function Authenticate() {
   };
 
   // Form submission
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    try {
-      if (otp) {
-        //  VERIFY THE OTP
-        const response = await authService.verifyOtp({
-          email: formData.email,
-          code: formData.otp,
-        });
-        setUser(response.user);
-        setAlerts({
-          type: "success",
-          message: "Account verified successfully!",
-        });
-        navigate("/");
-      } else {
-        // INITIAL SIGNUP OR SIGNIN
-        const response = await authService.authenticate(mode,  formData );
-
-        if (mode === "register") {
-          // Switch to OTP view instead of logging in
-          setOtp(true);
-          setFormState(3);
-          setAlerts({ type: "success", message: "OTP sent to your email!" });
-        } else {
-          setUser(response.user);
-          setAlerts({ type: "success", message: response.message });
-          if (mode === "login") navigate("/");
-        }
-      }
-    } catch (err) {
-      console.log(err);
-      const errorMessage =
-        err.message;
-      setAlerts({ type: "error", message: errorMessage });
-    } finally {
-      setLoading(false);
+  try {
+    if (formState === 3) {
+      await dispatch(verifyOtp({ email: formData.email, code: formData.otp })).unwrap();
+      toast.success("Verified successfully!");
+      navigate("/home");
+    } else if (formState === 1) {
+      await dispatch(register(formData)).unwrap();
+      setFormState(3);
     }
-  };
+     else if (formState === 2) {
+      await dispatch(forgot(formData.email)).unwrap();
+      toast.success("OTP sent!");
+      setFormState(3);
+    }
+    else if (formState === 0) {
+      await dispatch(login(formData)).unwrap();
+      toast.success("Welcome Back!");
+    }
+  } catch (err) {
+    console.log(err)
+  }
+};
+
 
   return (
     <>

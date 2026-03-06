@@ -2,13 +2,28 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import RestoreIcon from "@mui/icons-material/Restore";
 import { Box, Button, TextField, Typography } from "@mui/material";
+import { useDispatch } from "react-redux";
+import { logout } from "../../redux/slices/auth.slice";
+import { toast } from "react-toastify";
 
 function Home() {
+  const dispatch = useDispatch();
+
   const [meetingCode, setMeetingCode] = useState("");
   const navigate = useNavigate();
 
   const handleJoinVideoCall = () => {
-    navigate(`${meetingCode}`);
+    navigate(`/${meetingCode}`);
+  };
+
+  const handleLogout = async () => {
+    try {
+      await dispatch(logout()).unwrap();
+      toast.success("Logged out successsfuly!");
+      navigate("/auth");
+    } catch (e) {
+      toast.error(e.message);
+    }
   };
 
   return (
@@ -62,6 +77,7 @@ function Home() {
             </Button>
             <Button
               variant="text"
+              onClick={handleLogout}
               sx={{
                 fontWeight: 500,
                 px: { xs: 1.5, sm: 2 },

@@ -108,7 +108,10 @@ export const login = async (req, res) => {
 };
 
 export const logout = async (req, res) => {
-  const { user } = req;
+  const { user_id } = req.user;
+
+  const user = await User.findByPk(user_id);
+
   if (!user) {
     return res.status(401).json({ message: "Not authenticated" });
   }
