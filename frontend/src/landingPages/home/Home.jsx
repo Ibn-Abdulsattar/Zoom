@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import RestoreIcon from "@mui/icons-material/Restore";
 import { Box, Button, TextField, Typography } from "@mui/material";
 import { useDispatch } from "react-redux";
-import { logout } from "../../redux/slices/auth.slice";
+import { addToHistory } from "../../redux/slices/auth.slice";
 import { toast } from "react-toastify";
+import Navbar from "../../components/Navbar";
 
 function Home() {
   const dispatch = useDispatch();
@@ -12,17 +12,15 @@ function Home() {
   const [meetingCode, setMeetingCode] = useState("");
   const navigate = useNavigate();
 
-  const handleJoinVideoCall = () => {
-    navigate(`/${meetingCode}`);
-  };
-
-  const handleLogout = async () => {
+  const handleSubmit = async (e) => {
     try {
-      await dispatch(logout()).unwrap();
-      toast.success("Logged out successsfuly!");
-      navigate("/auth");
+      e.preventDefault();
+      await dispatch(addToHistory({ meetingCode }));
+      toast.success("Meeting created successfuly!");
+      navigate(`/${meetingCode}`);
     } catch (e) {
       toast.error(e.message);
+      console.log(e);
     }
   };
 
@@ -35,59 +33,7 @@ function Home() {
       }}
     >
       {/* NAV */}
-      <nav>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            px: { xs: 2, sm: 4, md: 6 },
-            py: 2,
-            borderBottom: "1px solid rgba(167,139,250,0.12)",
-            backdropFilter: "blur(12px)",
-          }}
-        >
-          {/* Heading */}
-          <Box>
-            <Typography
-              variant="h5"
-              sx={{
-                fontWeight: 800,
-                fontSize: { xs: "1.2rem", sm: "1.5rem" },
-                background: "#000",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                letterSpacing: "-0.5px",
-              }}
-            >
-              Vision Meet
-            </Typography>
-          </Box>
-
-          {/* Button container */}
-          <Box sx={{ display: "flex", gap: 1 }}>
-            <Button
-              sx={{
-                px: { xs: 1.5, sm: 2 },
-                fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                fontWeight: 500,
-              }}
-            >
-              <RestoreIcon sx={{ mr: 0.5, fontSize: "1rem" }} /> History
-            </Button>
-            <Button
-              variant="text"
-              onClick={handleLogout}
-              sx={{
-                fontWeight: 500,
-                px: { xs: 1.5, sm: 2 },
-              }}
-            >
-              Logout
-            </Button>
-          </Box>
-        </Box>
-      </nav>
+      <Navbar mode="history"/>
 
       {/* Home Container */}
       <Box
@@ -127,13 +73,13 @@ function Home() {
 
           <Box
             component="form"
+            onSubmit={handleSubmit}
             sx={{
               display: "flex",
               gap: 1.5,
               flexDirection: { xs: "column", sm: "row" },
               justifyContent: { xs: "center", md: "flex-start" },
             }}
-            onSubmit={handleJoinVideoCall}
           >
             <TextField
               value={meetingCode}

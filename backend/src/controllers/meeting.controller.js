@@ -6,7 +6,7 @@ import { User } from "../models/user.model.js";
 export const getUserHistory = async (req, res, next) => {
   const { user_id } = req.user;
 
-  const [rows, count] = await Meeting.findAndCountAll({
+  const {rows, count} = await Meeting.findAndCountAll({
     where: { user_id },
     include: [{ model: User, as: "user" }],
     limit: 12,

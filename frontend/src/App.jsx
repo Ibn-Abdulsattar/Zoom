@@ -5,6 +5,7 @@ import VideoMeet from "./landingPages/video/VideoMeet";
 import Landing from "./landingPages/landing/Landing";
 import Home from "./landingPages/home/Home";
 import {ToastContainer} from "react-toastify";
+import History from "./landingPages/history/History";
 
 
 function App() {
@@ -26,6 +27,7 @@ function App() {
         <Route path="/home" element={<Home />} />
         <Route path="/auth" element={<Authenticate />} />
         <Route path="/:url" element={<VideoMeet />} />
+        <Route path="/history" element={<History />} />
       </Routes>
     </>
   );

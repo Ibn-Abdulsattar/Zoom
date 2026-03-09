@@ -6,7 +6,6 @@ const API_Base = axios.create({
   withCredentials: true,
 });
 
-
 export const register = createAsyncThunk(
   "auth/register",
   async (userdata, { rejectWithValue }) => {
@@ -34,19 +33,14 @@ export const login = createAsyncThunk(
 );
 
 export const logout = createAsyncThunk("auth/logout", async () => {
-  await API_Base.post(
-    `/logout`,{}
-  );
+  await API_Base.post(`/logout`, {});
 });
 
 export const forgot = createAsyncThunk(
   "/forgot",
   async (email, { rejectWithValue }) => {
     try {
-      const response = await API_Base.post(
-        `/forgot`,
-        { email },
-      );
+      const response = await API_Base.post(`/forgot`, { email });
       return response.data;
     } catch (error) {
       return rejectWithValue(
@@ -84,6 +78,34 @@ export const resetPassword = createAsyncThunk(
   },
 );
 
+export const getUserHistory = createAsyncThunk(
+  "auth/get_all_activity",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await API_Base.get(`/get_all_activity`);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetching history!",
+      );
+    }
+  },
+);
+
+export const addToHistory = createAsyncThunk(
+  "auth/add_to_activity",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await API_Base.post(`/add_to_activity`, data);
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Add to activity failed",
+      );
+    }
+  },
+);
+
 export const authSlice = createSlice({
   name: "auth",
   initialState: {
@@ -91,12 +113,16 @@ export const authSlice = createSlice({
     isAuth: false,
     isLoading: false,
     error: null,
+    userHistory: [],
+    addHistory: null
   },
   selectors: {
     user: (state) => state.user,
     isAuth: (state) => state.isAuth,
     loader: (state) => state.isLoading,
     error: (state) => state.error,
+    userAllHistory: (state)=> state.userHistory,
+    addToHistory: (state)=> state.addHistory
   },
   reducers: {
     clearError: (state) => {
@@ -111,7 +137,7 @@ export const authSlice = createSlice({
         state.isAuth = false;
         state.error = null;
       })
-            .addCase(verifyOtp.fulfilled, (state, action) => {
+      .addCase(verifyOtp.fulfilled, (state, action) => {
         state.isLoading = false;
         state.user = action.payload.user;
         state.isAuth = true;
@@ -128,6 +154,12 @@ export const authSlice = createSlice({
         state.user = null;
         state.isAuth = false;
         state.error = null;
+      })
+            .addCase(getUserHistory.fulfilled, (state, action) => {
+        state.userHistory = action.payload;
+      })
+            .addCase(addToHistory.fulfilled, (state, action) => {
+        state.addHistory = action.payload.data;
       })
       .addMatcher(
         (action) => action.type.endsWith("/pending"),
@@ -146,6 +178,6 @@ export const authSlice = createSlice({
   },
 });
 
-export const { user, isAuth, loader, error } = authSlice.selectors;
+export const { user, isAuth, loader, error, userAllHistory, addHistory  } = authSlice.selectors;
 export const { clearError } = authSlice.actions;
 export default authSlice.reducer;
