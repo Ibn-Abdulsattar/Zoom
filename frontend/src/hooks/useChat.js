@@ -84,9 +84,11 @@ username,
   };
 
     const handleChatModule = () => {
-    const next = !showModel;
-    setShowModel(next);
-    showModelRef.current = next;
+    setShowModel(prev => {
+    const next = !prev
+    showModelRef.current = next  
+    return next
+  })
     setNewMessages(0);
   };
 

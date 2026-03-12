@@ -4,7 +4,6 @@ import { blackSilence } from "../utils/streamUtils";
 import { useNavigate } from "react-router-dom";
 import { io } from "socket.io-client";
 
-
 export default function useWebrtc(
   socketRef,
   socketIdRef,
@@ -16,8 +15,7 @@ export default function useWebrtc(
   gotMessageFromServer,
   addMessage,
 ) {
-
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   // connectToSocketServer
   const connectToSocketServer = () => {
@@ -37,62 +35,80 @@ const navigate = useNavigate();
 
       socketRef.current.on("user-joined", (id, clients) => {
         clients.forEach((socketListId) => {
-          connections[socketListId] = new RTCPeerConnection(
-            peerConfigConnections,
-          );
+          if (!connections[socketListId]) {
+            connections[socketListId] = new RTCPeerConnection(
+              peerConfigConnections,
+            );
 
-          connections[socketListId].onicecandidate = (event) => {
-            if (event.candidate !== null) {
-              socketRef.current.emit(
-                "signal",
-                socketListId,
-                JSON.stringify({ ice: event.candidate }),
-              );
-            }
-          };
-
-          connections[socketListId].ontrack = (event) => {
-            const remoteStream = event.streams[0];
-
-            setVideos((prevVideos) => {
-              const videoExist = prevVideos.find(
-                (v) => v.socketId === socketListId,
-              );
-
-              if (videoExist) {
-                const updated = prevVideos.map((v) =>
-                  v.socketId === socketListId
-                    ? { ...v, stream: remoteStream }
-                    : v,
+            connections[socketListId].onicecandidate = (event) => {
+              if (event.candidate !== null) {
+                socketRef.current.emit(
+                  "signal",
+                  socketListId,
+                  JSON.stringify({ ice: event.candidate }),
                 );
-                videoRef.current = updated;
-                return updated;
-              } else {
-                const newVideo = {
-                  socketId: socketListId,
-                  stream: remoteStream,
-                  autoplay: true,
-                  playsinline: true,
-                };
-                const updated = [...prevVideos, newVideo];
-                videoRef.current = updated;
-                return updated;
               }
-            });
-          };
+            };
+
+            connections[socketListId].ontrack = (event) => {
+              const remoteStream = event.streams[0];
+
+              setVideos((prevVideos) => {
+                const videoExist = prevVideos.find(
+                  (v) => v.socketId === socketListId,
+                );
+
+                if (videoExist) {
+                  const updated = prevVideos.map((v) =>
+                    v.socketId === socketListId
+                      ? { ...v, stream: remoteStream }
+                      : v,
+                  );
+                  videoRef.current = updated;
+                  return updated;
+                } else {
+                  const newVideo = {
+                    socketId: socketListId,
+                    stream: remoteStream,
+                    autoplay: true,
+                    playsinline: true,
+                  };
+                  const updated = [...prevVideos, newVideo];
+                  videoRef.current = updated;
+                  return updated;
+                }
+              });
+            };
+          }
 
           if (
             localStreamRef.current !== undefined &&
             localStreamRef.current !== null
           ) {
             localStreamRef.current.getTracks().forEach((track) => {
-              connections[socketListId].addTrack(track, localStreamRef.current);
+              const isAlreadyAdded = connections[socketListId]
+                .getSenders()
+                .some((sender) => sender.track === track);
+              if (!isAlreadyAdded) {
+                connections[socketListId].addTrack(
+                  track,
+                  localStreamRef.current,
+                );
+              }
             });
           } else {
             // Black silence TODO
             localStreamRef.current = blackSilence();
             localStreamRef.current.getTracks().forEach((track) => {
-              connections[socketListId].addTrack(track, localStreamRef.current);
+              const isAlreadyAdded = connections[socketListId]
+                .getSenders()
+                .some((sender) => sender.track === track); 
+              if (!isAlreadyAdded) {
+                connections[socketListId].addTrack(
+                  track,
+                  localStreamRef.current,
+                );
+              }
             });
           }
         });
