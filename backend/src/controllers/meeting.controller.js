@@ -26,12 +26,20 @@ export const addToHistory = async (req, res, next) => {
 
   const user = await User.findByPk(user_id);
 
-  const newMeeting = await Meeting.create({
-    user_id: user.user_id,
+const [meeting, created] = await Meeting.findOrCreate({
+  where: { 
     meeting_code: meetingCode,
-  });
+    user_id: user.user_id 
+  },
+  defaults: {
+    meeting_code: meetingCode,
+    user_id: user.user_id,
+    date: new Date()
+  }
+});
 
-  return res
-    .status(200)
-    .json({ message: "Meeting created successfuly!", data: newMeeting });
+return res.status(200).json({ 
+  message: created ? "Meeting added to history!" : "Meeting already in history", 
+  data: meeting 
+});
 };

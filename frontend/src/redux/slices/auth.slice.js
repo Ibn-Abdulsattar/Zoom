@@ -25,15 +25,18 @@ export const login = createAsyncThunk(
   async (userData, { rejectWithValue }) => {
     try {
       const response = await API_Base.post(`/login`, userData);
+      localStorage.setItem("token", response.data.token);
       return response.data;
     } catch (error) {
+    localStorage.removeItem("token")
       return rejectWithValue(error.response?.data?.message || "Login failed");
     }
   },
 );
 
 export const logout = createAsyncThunk("auth/logout", async () => {
-  await API_Base.post(`/logout`, {});
+   await API_Base.post(`/logout`, {});
+    localStorage.removeItem("token")
 });
 
 export const forgot = createAsyncThunk(
@@ -55,8 +58,10 @@ export const verifyOtp = createAsyncThunk(
   async (data, { rejectWithValue }) => {
     try {
       const response = await API_Base.post(`/verify-otp`, data);
+      localStorage.setItem("token", response.data.token);
       return response.data;
     } catch (error) {
+    localStorage.removeItem("token")
       return rejectWithValue(
         error.response?.data?.message || "Verification failed!",
       );
@@ -162,7 +167,7 @@ export const authSlice = createSlice({
         state.addHistory = action.payload.data;
       })
       .addMatcher(
-        (action) => action.type.endsWith("/pending"),
+        (action) =>  action.type.endsWith("/pending"),
         (state) => {
           state.isLoading = true;
           state.error = null;

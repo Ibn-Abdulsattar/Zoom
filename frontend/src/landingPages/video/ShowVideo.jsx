@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 import { user } from '../../redux/slices/auth.slice';
 
 export default function ShowVideo({localVideoRef, videos}) {
-    const name = useSelector(user).username || "Guest";
+    const name = useSelector(user)?.username || "Guest";
   return (
     <Box
               sx={{

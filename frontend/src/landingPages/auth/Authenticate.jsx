@@ -11,13 +11,17 @@ import Typography from "@mui/material/Typography";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { register, login, verifyOtp, forgot } from "../../redux/slices/auth.slice.js";
-import { isAuth, error, loader } from "../../redux/slices/auth.slice";
+import {
+  register,
+  login,
+  verifyOtp,
+  forgot,
+} from "../../redux/slices/auth.slice.js";
+import { error, loader } from "../../redux/slices/auth.slice";
 import { clearError } from "../../redux/slices/auth.slice";
 import { toast } from "react-toastify";
 
 export default function Authenticate() {
-  const isAuthenticated = useSelector(isAuth);
   const apiError = useSelector(error);
   const loading = useSelector(loader);
 
@@ -33,10 +37,6 @@ export default function Authenticate() {
   const switchFormState = (state) => {
     setFormState(state);
   };
-
-  useEffect(() => {
-    if (isAuthenticated) navigate("/home");
-  }, [isAuthenticated, navigate]);
 
   useEffect(() => {
     if (apiError) {
@@ -81,32 +81,34 @@ export default function Authenticate() {
   };
 
   // Form submission
-const handleSubmit = async (e) => {
-  e.preventDefault();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    if (formState === 3) {
-      await dispatch(verifyOtp({ email: formData.email, code: formData.otp })).unwrap();
-      toast.success("Verified successfully!");
-      navigate("/home");
-    } else if (formState === 1) {
-      await dispatch(register(formData)).unwrap();
-      setFormState(3);
+    try {
+      if (formState === 3) {
+        await dispatch(
+          verifyOtp({ email: formData.email, code: formData.otp }),
+        ).unwrap();
+        console.log(origin);
+        navigate("/home");
+        toast.success("Verified successfully!");
+      } else if (formState === 1) {
+        await dispatch(register(formData)).unwrap();
+        setFormState(3);
+      } else if (formState === 2) {
+        await dispatch(forgot(formData.email)).unwrap();
+        toast.success("OTP sent!");
+        setFormState(3);
+      } else if (formState === 0) {
+        await dispatch(login(formData)).unwrap();
+        console.log(origin);
+        navigate("/home");
+        toast.success("Welcome Back!");
+      }
+    } catch (err) {
+      console.log(err);
     }
-     else if (formState === 2) {
-      await dispatch(forgot(formData.email)).unwrap();
-      toast.success("OTP sent!");
-      setFormState(3);
-    }
-    else if (formState === 0) {
-      await dispatch(login(formData)).unwrap();
-      toast.success("Welcome Back!");
-    }
-  } catch (err) {
-    console.log(err)
-  }
-};
-
+  };
 
   return (
     <>

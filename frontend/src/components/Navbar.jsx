@@ -125,7 +125,7 @@ export default function Navbar(mode) {
               borderRadius: "8px",
               "&:hover": { bgcolor: "#1d4ed8" },
             }}
-            endIcon={<LogoutIcon />}
+            endIcon={auth ? <LogoutIcon /> : undefined}
           >
             {auth ? "Logout" : "Login"}
           </Button>
@@ -210,7 +210,7 @@ export default function Navbar(mode) {
               borderRadius: "8px",
               "&:hover": { bgcolor: "#1d4ed8" },
             }}
-            endIcon={<LogoutIcon />}
+            endIcon={auth ? <LogoutIcon /> : undefined}
           >
             {auth ? "Logout" : "Login"}
           </Button>
