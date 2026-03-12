@@ -94,6 +94,7 @@ export default function VideoMeet() {
   useEffect(() => {
     return () => {
       if (socketRef.current) {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         socketRef.current.disconnect();
       }
     };
@@ -112,10 +113,10 @@ export default function VideoMeet() {
       return;
     }
     if (!isJoined.current) return;
-    if (isGetMediaCalled.current) {
-      isGetMediaCalled.current = false;
-      return;
-    }
+    // if (isGetMediaCalled.current) {
+    //   isGetMediaCalled.current = false;
+    //   return;
+    // }
     getUserMedia();
   }, [audio, video, getUserMedia]);
 
