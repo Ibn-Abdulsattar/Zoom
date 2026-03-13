@@ -191,7 +191,7 @@ export default function VideoMeet() {
             {showModel && (
               <Box
                 sx={{
-                  width: 300,
+                  width: {sm: 200, md: 250, lg:300},
                   flexShrink: 0,
                   background: "#111827",
                   border: "1px solid #1e3a5f",

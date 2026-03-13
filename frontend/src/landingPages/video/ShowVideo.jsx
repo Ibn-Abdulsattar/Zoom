@@ -37,6 +37,7 @@ export default function ShowVideo({localVideoRef, videos}) {
                     height: "100%",
                     objectFit: "cover",
                     display: "block",
+                    maxHeight: 352,
                   }}
                 />
                 {/* YOU badge */}
