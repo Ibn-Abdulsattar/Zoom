@@ -8,7 +8,7 @@ import TopBar from "./TopBar";
 import useMedia from "../../hooks/useMedia";
 import useChat from "../../hooks/useChat";
 import useDisplayMedia from "../../hooks/useDisplayMedia";
-import useWebrtc from "../../hooks/useWebrtc";
+import useWebrtc from "../../hooks/useWebRTC";
 const connections = {};
 
 export default function VideoMeet() {
